@@ -1,5 +1,3 @@
-library(aocodeR)
-
 source('utils.R')
 inday9 <- get_aoc_input(9, 2020, Sys.getenv('COOKIE_PATH'))
 input <- as.numeric(strsplit(inday9, '\n')[[1]])
