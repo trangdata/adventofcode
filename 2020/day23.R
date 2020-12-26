@@ -33,14 +33,14 @@ print(myarray)
 
 
 ## part 2
-ninputs = 1000000
+ninputs = 10^6
 modified = c(input, (max(input) + 1):ninputs)
 myarray = c(modified[-1], modified[1])[order(modified)]
 min_val = min(myarray)
 max_val = max(myarray)
 this_val = modified[1]
 
-for (i in 1:10000000){
+for (i in 1:10^7){
   first = myarray[this_val]
   second = myarray[first]
   third = myarray[second]
