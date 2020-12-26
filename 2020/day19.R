@@ -166,10 +166,6 @@ sum(sapply(mssgs, check811, fix_length = 8))
 
 
 ## part 2
-rules['8', 'X2'] = '42 | 42 8'
-rules['11', 'X2'] = '42 31 | 42 11 31'
-fixed_rule = generate_rules(rules)
-
 poss31 = fixed_rule %>% filter(X1 == '31') %>% pull(X2)
 poss42 = fixed_rule %>% filter(X1 == '42') %>% pull(X2)
 
