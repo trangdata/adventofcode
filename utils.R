@@ -9,3 +9,5 @@ get_aoc_input <- function(day, year = 2020, cookie, encoding = "UTF-8") {
                 encoding = encoding) %>% trimws()
 
 }
+
+bitsToInt <- function(x) sum(2^(which(rev(x))-1))
