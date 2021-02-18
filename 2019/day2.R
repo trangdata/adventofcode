@@ -1,7 +1,6 @@
 source('utils.R')
 inday2 <- get_aoc_input(2, 2019, Sys.getenv('COOKIE_PATH'))
-input <- strsplit(inday2, ',')[[1]] %>% as.numeric()
-input0 = input
+input0 <- strsplit(inday2, ',')[[1]] %>% as.numeric()
 
 nv = expand.grid(1:100, 1:100)
 for (row in 1:nrow(nv)) {
@@ -30,4 +29,4 @@ for (row in 1:nrow(nv)) {
     break
   }
 }
-nv[row, ]
+sum(nv[row, ]*c(100, 1))
