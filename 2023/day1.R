@@ -1,4 +1,3 @@
-library(tidyverse)
 library(stringr)
 library(stringi)
 library(english)
@@ -18,7 +17,7 @@ source("utils.R")
 # zoneight234
 # 7pqrstsixteen"
 
-input <- get_aoc_input(day = 1, cookie = Sys.getenv("COOKIE_2023"))
+input <- get_aoc_input(1)
 inp <- strsplit(input, "\n")[[1]]
 
 # Extract the first number
@@ -28,7 +27,7 @@ last_num <- function(s) str_sub(gsub("\\D", "", s), -1)
 sum(as.numeric(paste0(first_num(inp), last_num(inp))))
 
 ## part 2 ----
-patterns <- english(1:1000)
+patterns <- english(1:9)
 reps <- as.numeric(patterns) |>
   as.character() |>
   setNames(patterns)
