@@ -1,16 +1,16 @@
-library(tidyverse)
-library(stringr)
+# library(tidyverse)
+# library(stringr)
 library(purrr)
 source("utils.R")
 source("day10-funcs.R")
 ## part 1 ----
 input <- get_aoc_input(10)
 
-input <- "7-F7-
-.FJ|7
-SJLL7
-|F--J
-LJ.LJ"
+# input <- "7-F7-
+# .FJ|7
+# SJLL7
+# |F--J
+# LJ.LJ"
 # input = "-L|F7
 # 7S-7|
 # L|7||
@@ -25,8 +25,8 @@ LJ.LJ"
 # .|II||II|.
 # .L--JL--J.
 # .........."
-
-input = ".F----7F7F7F7F-7....
+#
+input <- ".F----7F7F7F7F-7....
 .|F--7||||||||FJ....
 .||.FJ||||||||L7....
 FJL7L7LJLJ||LJ.L-7..
@@ -36,6 +36,16 @@ L--J.L7...LJS7F-7L7.
 .....|FJLJ|FJ|F7|.LJ
 ....FJL-7.||.||||...
 ....L---J.LJ.LJLJ..."
+input = "FF7FSF7F7F7F7F7F---7
+L|LJ||||||||||||F--J
+FL-7LJLJ||||||LJL-77
+F--JF--7||LJLJ7F7FJ-
+L---JF-JLJ.||-FJLJJ7
+|F|F-JF---7F7-L7L|7|
+|FFJF7L7F-JF7|JL---7
+7-L-JL7||F7|L7F-7F7|
+L.L7LFJ|||||FJL7||LJ
+L7JLJL-JLJLJL--JLJ.L"
 inp <- strsplit(input, "\n")[[1]] |>
   strsplit("")
 m <- length(inp)
@@ -44,238 +54,146 @@ inmat <- inp |>
   unlist() |>
   matrix(byrow = TRUE, ncol = n)
 
-outmat <- matrix(0, ncol = ncol(inmat), nrow = nrow(inmat))
-animal <- which(inmat == "S", arr.ind = TRUE)
-animals <- list(as.vector(animal))
-outmat[animal[[1]], animal[[2]]] <- 1
+system.time({
+  animals <- part1(inmat)
+})
+length(animals)/2
 
-i <- 1
-animalsb <- list(as.vector(animal))
-while (i <= length(animals)) {
-  a <- animals[[i]]
-  possible_dirs <- get_dirs(slic(inmat, a))
-  for (d in possible_dirs) {
-    a1 <- a + dirs[[d]]
-    dif <- delta(
-      pipe = slic(inmat, a1),
-      dir = d
-    )
-    if (!is.null(dif)){
-      a2 <- a + dif
-      outmat[a1[[1]], a1[[2]]] <- 1
-      outmat[a2[[1]], a2[[2]]] <- 1
-
-      if (!(list(a2) %in% animals)) {
-        animalsb <- c(animalsb, list(a1, a2))
-        animals <- c(animals, list(a2))
-      }
-    }}
-  i <- i + 1
+outmat <- matrix(0, nrow = m, ncol = n)
+for (p in animals){
+  outmat[p[[1]], p[[2]]] <- 1
 }
-animalsb <- c(animalsb, list(a1))
-length(animals)
-length(animalsb)
-sum(outmat)/2
-
-# saveRDS(animals, file = "animals.rds")
-# saveRDS(outmat, file = "outmat.rds")
-
-pipemat <- outmat
 inpipe <- inmat
-inpipe[pipemat == 0] <- "."
+inpipe[outmat == 0] <- "."
 
 
-## EXPANDING ----
-outmat <- matrix(0, ncol = 2*ncol(pipemat), nrow = 2*nrow(pipemat))
-for (r in 1:nrow(pipemat)){
-  for (col in 1:ncol(pipemat)){
-    outmat[2*r, 2*col] <- pipemat[r, col]
+## EXPANDING inpipe2 ----
+m <- m * 2
+n <- n * 2
+inpipe2 <- matrix(".", nrow = m, ncol = n)
+for (r in seq(2, m, 2)) {
+  for (col in seq(2, n, 2)) {
+    inpipe2[r, col] <- inpipe[r / 2, col / 2]
   }
 }
 
-inpipe2 <- matrix(".", ncol = 2*ncol(inpipe), nrow = 2*nrow(inpipe))
-for (r in 1:nrow(inpipe)){
-  for (col in 1:ncol(inpipe)){
-    inpipe2[2*r, 2*col] <- inpipe[r, col]
-  }
-}
-
-for (r in 1:(m)){
-  for (col in 1:(n)){
-    rcol <- slic(inpipe2, c(2*r, 2*col))
-    rcol2 <- slic(inpipe2, c(2*r, 2*col + 2))
-    r2col <- slic(inpipe2, c(2*r + 2, 2*col))
+for (r in seq(2, m, 2)) {
+  for (col in seq(2, n, 2)) {
+    rcol <- slic(inpipe2, c(r, col))
+    rcol2 <- slic(inpipe2, c(r, col + 2))
+    r2col <- slic(inpipe2, c(r + 2, col))
     if (rcol %in% c("-", "F", "L") ||
-        rcol2 %in% c("-", "7", "J")){
-      inpipe2[2*r, 2*col + 1] <- "-"
+      rcol2 %in% c("-", "7", "J")) {
+      inpipe2[r, col + 1] <- "-"
     }
 
     if (rcol %in% c("|", "F", "7") ||
-        r2col %in% c("|", "J", "L")){
-      inpipe2[2*r + 1, 2*col] <- "|"
+      r2col %in% c("|", "J", "L")) {
+      inpipe2[r + 1, col] <- "|"
     }
   }
 }
-m <- m*2
-n <- n*2
 
 
-head(animalsb)
-
-## FILL IN ABmat with A ----
-ABmat <- matrix(NA, ncol = ncol(inpipe2), nrow = nrow(inpipe2))
-
-indices <- list(c(1,1),
-                c(1, ncol(inpipe2)),
-                c(nrow(inpipe2), 1),
-                c(nrow(inpipe2), ncol(inpipe2)))
-for (idx in indices){
-  ABmat[idx[[1]],idx[[2]]] <- "A"
+## Initialize ABmat with A at corners ----
+ABmat <- matrix(NA, ncol = n, nrow = m)
+indices <- list(c(1, 1), c(1, n), c(m, 1), c(m, n))
+for (idx in indices) {
+  ABmat[idx[[1]], idx[[2]]] <- "A"
 }
-
-
-i = 1
-
-while (i <= length(indices)){
-  a <- indices[[i]]
-
-  neighs <- neighbor_simple(a)
-  for (ne in neighs){
-    if (all(ne > c(0, 0)) && all(ne <= c(m,n))){
-      if (extract_inpipe2(ne) == "." && is.na(extractAB(ne))){
-        ABmat[ne[[1]], ne[[2]]] <- "A"
-        indices <- c(indices, list(ne))
-      }
-    }
-  }
-  i <- i + 1
-}
-
-## RERUN with larger matrix inmat ----
-inmat <- inpipe2
-animal <- which(inmat == "S", arr.ind = TRUE)
-animals <- list(as.vector(animal))
 i <- 1
-outmat <- matrix(0, ncol = 2*ncol(pipemat), nrow = 2*nrow(pipemat))
-outmat[animal[[1]], animal[[2]]] <- 1
-animalsb <- list(as.vector(animal))
-
-while (i <= length(animals)) {
-  a <- animals[[i]]
-  possible_dirs <- get_dirs(inmat[a[[1]], a[[2]]])
-  for (d in possible_dirs) {
-    nextid <- a + dirs[[d]]
-    pipe <- get_pipe(nextid)
-    nexta <- newxy(
-      row = a[[1]],
-      col = a[[2]],
-      pipe = pipe,
-      dir = d
-    )
-    if (!is.na(nexta[[1]])){
-      outmat[nextid[[1]], nextid[[2]]] <- 1
-      outmat[nexta[[1]], nexta[[2]]] <- 1
-
-      animalsb <- c(animalsb, list(nextid))
-      if (!(list(nexta) %in% animals)) {
-        animalsb <- c(animalsb, list(nexta))
-        animals <- c(animals, list(nexta))
-      }
-    }}
+while (i <= length(indices)) {
+  a <- indices[[i]]
+  neighs <- neighbor_simple(a)
+  for (ne in neighs) {
+    if (is.na(slic(ABmat, ne)) && slic(inpipe2, ne) == ".") {
+      ABmat[ne[[1]], ne[[2]]] <- "A"
+      indices <- c(indices, list(ne))
+    }
+  }
   i <- i + 1
 }
 
-## FINALLY calculate ABmat ----
 
-animalsb <- animalsb[!duplicated(animalsb)]
-sum(outmat)
-length(animalsb)
 
-# ABmat[87, 67] <- "A"
+## EXTRAPOLATE with larger matrix inmat ----
+inmat <- inpipe2
+npipes <- length(animals)
+is <- seq.int(npipes)
+animalsb <- vector("list", length = npipes *2)
+animalsb[2*(is-1) + 1] <- lapply(animals[is], `*`, y = 2)
+for (i in seq(2, 2*npipes, 2)){
+  animalsb[[i]] <- (animalsb[[i-1]] + animalsb[[(i+1)%%(2*npipes)]])/2
+}
+
 # k = 14
-for (k in 2:length(animalsb)){
+# profvis::profvis({
+for (k in 2:length(animalsb)) {
+  a <- animalsb[[k]]
+  neighs <- neighbors_more(a)
+  pipe <- slic(inpipe2, a)
+  adjs <- group_pipes(pipe)
 
-a <- animalsb[[k]]
+  for (i in 1:2) {
+    neighi <- neighs[adjs[[i]]]
+    adjAB <- neighbors(neighi) |>
+      sapply(\(x) slic(ABmat, x)) |>
+      # unlist() |>
+      na.omit()
 
-
-a
-neighs <- neighbors_more(a)
-pipe <- slice2(inpipe2, a)
-adjs <- group_pipes(pipe)
-
-
-
-for (i in 1:2){
-  adj1 <- adjs[[i]]
-  neighi <- neighs[adj1]
-  adjAB <- neighbors(neighi) |>
-    lapply(extractAB) |>
-    unlist() |>
-    na.omit()
-
-  if (length(adjAB)){
-    for (ne in neighi){
-      if (extract_outmat(c(ne[[1]], ne[[2]])) != 1){
-        ABmat[ne[[1]], ne[[2]]] <-  adjAB[[1]] # should be unique values
-
+    if (length(adjAB)) {
+      for (ne in neighi) {
+        # if (!is.na(slic(outmat, ne))) {
+        # if (is_inside(ne)){
+          ABmat[ne[[1]], ne[[2]]] <- adjAB[[1]] # should be unique values
+        # }
+      }
+    }
+  }
+  for (i in 1:2) {
+    neighi <- neighs[adjs[[i]]]
+    if (any(is.na(lapply(neighi, \(x) slic(ABmat, x))))) {
+      for (ne in neighi) {
+        opposite_ind <- neighs[[adjs[[3 - i]][[1]]]]
+        opposite_val <- slic(ABmat, opposite_ind)
+        if (!is.na(opposite_val)) {
+          ABmat[ne[[1]], ne[[2]]] <- revAB[[opposite_val]]
+        }
       }
     }
   }
 }
-for (i in 1:2){
-  adj1 <- adjs[[i]]
-  neighi <- neighs[adj1]
-  if (any(is.na(lapply(neighi, extractAB)))){
-    for (ne in neighi){
-      if (!is.na(extractAB(neighs[[adjs[[3-i]][[1]]]])) &&
-          extract_outmat(c(ne[[1]], ne[[2]])) != 1){
-        ABmat[ne[[1]], ne[[2]]] <- revAB[[extractAB(neighs[[adjs[[3-i]][[1]]]])]]
-      }
-    }
-  }
-}
-
-
-}
-
+# })
 
 ABmat2 <- ABmat
 ABmat2[is.na(ABmat2)] <- inpipe2[is.na(ABmat2)]
 
 # fill in ABmat again with either A or B
-
-i = 1
-indices <- which(is.na(ABmat)&!inpipe2 != ".", arr.ind = TRUE)
-while (i <= nrow(indices)){
-  # while (i < 10000){
-  a <- indices[i,]
+i <- 1
+indices <- which(is.na(ABmat) & !inpipe2 != ".", arr.ind = TRUE)
+while (i <= nrow(indices)) {
+  a <- indices[i, ]
 
   adjAB <- neighbor_simple(a) |>
-    lapply(extractAB) |>
+    lapply(\(x) slic(ABmat, x)) |>
     unlist() |>
     na.omit()
 
-  if (length(adjAB) > 0){
-
-    ABmat[a[[1]], a[[2]]] <-  adjAB[[1]] # should be unique values
+  if (length(adjAB) > 0) {
+    ABmat[a[[1]], a[[2]]] <- adjAB[[1]] # should be unique values
   }
   i <- i + 1
 }
 
-
+# easy view of ABmat
 ABmat2 <- ABmat
 ABmat2[is.na(ABmat2)] <- inpipe2[is.na(ABmat2)]
-sum(ABmat2 == ".")
 
-
-
-ABreduced <- matrix(".", ncol = ncol(ABmat)/2, nrow = nrow(ABmat)/2)
-for (r in 1:nrow(ABreduced)){
-  for (col in 1:ncol(ABreduced)){
-    ABreduced[r, col] <- ABmat[r*2, col*2]
+ABreduced <- matrix(".", nrow = m / 2, ncol = n / 2)
+for (r in seq(2, m, 2)) {
+  for (col in seq(2, n, 2)) {
+    ABreduced[r/2, col/2] <- ABmat[r, col]
   }
 }
 sum(ABreduced == "B", na.rm = TRUE)
-
-
 
