@@ -8,4 +8,11 @@ get_aoc_input <- function(day, year = 2023, cookie = Sys.getenv("TRANG_COOKIE"),
     trimws()
 }
 
-bitsToInt <- function(x) sum(2^(which(rev(x))-1))
+bitsToInt <- function(x) sum(2^(which(rev(x)) - 1))
+myIntToBits <- function(x, type = "int") {
+  inte <- rev(as.integer(intToBits(x)))
+  if (type == "int") {
+    return(inte)
+  }
+  paste(inte, collapse = "")
+}
